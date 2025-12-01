@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="my_hostel.list">
+      <field name="name">my_hostel list</field>
+      <field name="model">my_hostel.my_hostel</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="my_hostel.action_window">
+      <field name="name">my_hostel window</field>
+      <field name="res_model">my_hostel.my_hostel</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="my_hostel.action_server">
+      <field name="name">my_hostel server</field>
+      <field name="model_id" ref="model_my_hostel_my_hostel"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="my_hostel" id="my_hostel.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="my_hostel.menu_1" parent="my_hostel.menu_root"/>
+    <menuitem name="Menu 2" id="my_hostel.menu_2" parent="my_hostel.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="my_hostel.menu_1_list" parent="my_hostel.menu_1"
+              action="my_hostel.action_window"/>
+    <menuitem name="Server to list" id="my_hostel" parent="my_hostel.menu_2"
+              action="my_hostel.action_server"/>
+-->
+  </data>
+</odoo>
