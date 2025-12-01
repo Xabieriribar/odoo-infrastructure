@@ -1,0 +1,14 @@
+# --- Security: Never commit secrets ---
+.env
+
+# --- Data: Never commit the database or file storage ---
+postgres-data/
+odoo-data/
+letsencrypt/
+
+# --- System: Python/OS junk ---
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+.vscode/

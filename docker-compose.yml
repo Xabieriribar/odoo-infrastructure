@@ -1,0 +1,119 @@
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    userns_mode: "host"
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"
+      - "443:443"
+    command:
+      - "--log.level=DEBUG"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@mela.bike"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - web
+
+  db:
+    image: postgres:15
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo_db_password
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  odoo:
+    image: odoo:17
+    container_name: odoo
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # --- FIXED HEALTHCHECK ---
+    # We use Python to check LOCALHOST.
+    # This asks Odoo directly if it is running, ignoring Traefik/Internet.
+          # ... dentro de odoo:
+    healthcheck:
+      # Apuntamos a /web/login explícitamente para evitar redirecciones confusas
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8069/web/login')"]
+      interval: 30s       # Chequear cada 30 segundos (menos estrés)
+      timeout: 30s        # Esperar hasta 30 segundos una respuesta (vital para cuando compila assets)
+      retries: 3
+      start_period: 120s  # ¡CRÍTICO! Darle 2 minutos enteros de gracia al arrancar antes de juzgarlo
+    env_file: .env
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo_db_password
+    volumes:
+      - ./odoo-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+    networks:
+      - internal
+      - web
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=odoo-prod_web"
+
+      # --- MIDDLEWARE DE SEGURIDAD (Definición Global) ---
+      - "traefik.http.middlewares.sec-headers.headers.customresponseheaders.Server="
+
+      # --- RUTA 1: ODOO WEB (Tráfico Normal) -> Puerto 8069 ---
+      - "traefik.http.services.odoo-web.loadbalancer.server.port=8069"
+      - "traefik.http.routers.odoo-web.rule=Host(`staging.mela.bike`)"
+      - "traefik.http.routers.odoo-web.entrypoints=websecure"
+      - "traefik.http.routers.odoo-web.tls.certresolver=myresolver"
+      - "traefik.http.routers.odoo-web.service=odoo-web"
+      - "traefik.http.routers.odoo-web.middlewares=sec-headers"
+
+      # --- RUTA 2: ODOO CHAT (WebSockets) -> Puerto 8072 ---
+      # Odoo 17 usa la ruta /websocket para el chat en tiempo real
+      - "traefik.http.services.odoo-chat.loadbalancer.server.port=8072"
+      - "traefik.http.routers.odoo-chat.rule=Host(`staging.mela.bike`) && PathPrefix(`/websocket`)"
+      - "traefik.http.routers.odoo-chat.entrypoints=websecure"
+      - "traefik.http.routers.odoo-chat.tls.certresolver=myresolver"
+      - "traefik.http.routers.odoo-chat.service=odoo-chat"
+      - "traefik.http.routers.odoo-chat.middlewares=sec-headers"
+
+networks:
+  web:
+    driver: bridge
+  internal:
+    driver: bridge
