@@ -1,5 +1,6 @@
 # --- Security: Never commit secrets ---
 .env
+config/odoo.conf
 
 # --- Data: Never commit the database or file storage ---
 postgres-data/
