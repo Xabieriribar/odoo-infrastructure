@@ -1,17 +1,6 @@
-# --- Security: Never commit secrets ---
-.env
-config/odoo.conf
-
-# --- Data: Never commit the database or file storage ---
-postgres-data/
-odoo-data/
-letsencrypt/
-
-# --- System: Python/OS junk ---
-__pycache__/
-*.pyc
-.DS_Store
-.idea/
-.vscode/
-config/odoo.conf
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.terraform.lock.hcl
+*.vars
 .env
