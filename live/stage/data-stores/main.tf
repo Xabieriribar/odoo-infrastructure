@@ -31,3 +31,7 @@ module "postgres" {
   source     = "../../../modules/data-stores/postgres"
   network_id = data.terraform_remote_state.net.outputs.vpc_id
 }
+output "db_private_ip" {
+  value       = module.postgres.db_private_ip
+  description = "The private IP of the database for the Odoo service"
+}

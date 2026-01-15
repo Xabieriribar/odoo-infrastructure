@@ -29,4 +29,5 @@ resource "hcloud_volume" "postgres_data" {
   size      = 50
   server_id = hcloud_server.db.id
   automount = true
+  format    = "ext4"
 }
