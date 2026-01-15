@@ -2,7 +2,7 @@ terraform {
   required_providers {
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "~> 1.45" # Pinning for production stability
+      version = "~> 1.45"
     }
   }
 }

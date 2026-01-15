@@ -6,6 +6,7 @@ terraform {
     }
   }
 }
+
 resource "hcloud_server" "db" {
   name        = "postgres-db"
   server_type = "cax21"
