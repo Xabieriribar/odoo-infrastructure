@@ -1,27 +1,29 @@
 terraform {
   required_version = ">= 1.14.3"
 
-  backend "s3" {
-    bucket = "my-odoo-infra-state"
-    key    = "stage/networking/terraform.tfstate"
-    region = "us-east-1" # Dummy region for S3 compatibility
-    
-    endpoints = {
-      s3 = "https://nbg1.your-object-storage.com" # Use your actual endpoint
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45"
     }
+  }
 
-    # MANDATORY: Disable AWS-specific identity lookups
+  backend "s3" {
+    bucket    = "odoo-infra-production-state"
+    key       = "stage/networking/terraform.tfstate"
+    region    = "us-east-1"
+    endpoints = { s3 = "https://fsn1.your-objectstorage.com" } # Updated endpoint
+
     skip_credentials_validation = true
     skip_metadata_api_check     = true
     skip_region_validation      = true
-    skip_requesting_account_id  = true  # Prevents the STS:GetCallerIdentity error
-    
-    use_path_style              = true # Recommended for Hetzner/S3-compatible
+    skip_requesting_account_id  = true
+    use_path_style              = true
   }
 }
 
 module "vpc" {
   source           = "../../../modules/networking/hcloud-vpc"
   network_name     = "stage-odoo-vpc"
-  developer_ssh_ip = "YOUR_PC_IP/32" 
+  developer_ssh_ip = "185.25.195.181/32" # Make sure to replace this!
 }
