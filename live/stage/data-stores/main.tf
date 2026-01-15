@@ -2,7 +2,7 @@ data "terraform_remote_state" "net" {
   backend = "s3"
   config = {
     endpoint = "nbg1.your-object-storage.com"
-    bucket   = "my-odoo-infra-state"
+    bucket   = "odoo-infra-production-state"
     key      = "stage/networking/terraform.tfstate"
   }
 }

@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45" # Pinning for production stability
+    }
+  }
+}
+
 resource "hcloud_network" "vpc" {
   name     = var.network_name
   ip_range = "10.0.0.0/16"

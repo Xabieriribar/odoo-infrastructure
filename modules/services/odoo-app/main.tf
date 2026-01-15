@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45"
+    }
+  }
+}
+
 resource "hcloud_server" "odoo" {
   name        = "odoo-app-server"
   server_type = "cax21" # ARM

@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45"
+    }
+  }
+}
 resource "hcloud_server" "db" {
   name        = "postgres-db"
   server_type = "cax21"
